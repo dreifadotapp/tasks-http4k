@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(":tasks-http4k-server")
+    implementation project(":tasks-http4k-client")
+}
+

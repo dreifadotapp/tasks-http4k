@@ -102,7 +102,6 @@ class HttpTaskClient(
         timeout: Int?
     ): String {
         var paramMarker = "?"
-        ctx.customHeaders() // what to do with these ?
         val sb = StringBuilder(baseUrl)
         if (!sb.endsWith("/")) sb.append("/")
         sb.append("api/exec/")

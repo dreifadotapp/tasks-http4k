@@ -14,7 +14,7 @@ class WsCallbackLoggingConsumerContext(
     private val serializer = JsonSerialiser()
 
     override fun acceptLog(msg: LogMessage) {
-        val json = serializer.serialiseData(msg)
+        val json = serializer.toPacket(msg)
         makeWSCall(Uri.of("${baseUrl}/logChannel/${channelId}/log"), json)
     }
 

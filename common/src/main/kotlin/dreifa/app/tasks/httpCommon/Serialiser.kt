@@ -15,11 +15,11 @@ class Serialiser {
     }
 
     fun serialiseData(data: Any): String {
-        return rss.serialiseData(data)
+        return rss.toPacket(data)
     }
 
     fun deserialiseData(serialised: String): SerialisationPacket {
-        return rss.deserialiseData(serialised)
+        return rss.fromPacket(serialised)
     }
 
 

@@ -6,7 +6,6 @@ import dreifa.app.tasks.client.ClientContext
 import dreifa.app.tasks.client.TaskClient
 import dreifa.app.tasks.httpCommon.BlockingTaskRequest
 import dreifa.app.tasks.httpCommon.Serialiser
-import dreifa.app.tasks.httpCommon.WsCallbackLoggingContext
 import dreifa.app.types.UniqueId
 import org.apache.hc.client5.http.config.RequestConfig
 import org.apache.hc.client5.http.impl.classic.HttpClients

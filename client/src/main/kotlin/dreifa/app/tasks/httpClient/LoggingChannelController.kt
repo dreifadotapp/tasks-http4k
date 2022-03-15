@@ -50,7 +50,7 @@ class LogChannelController(registry: Registry) : RoutingWsHandler {
         "/logChannel/{id}/log" bind { ws: Websocket ->
             val id = idLens(ws.upgradeRequest)
             ws.onMessage {
-                val msg = serializer.deserialiseData(it.bodyString()).data as LogMessage
+                val msg = serializer.fromPacket(it.bodyString()).data as LogMessage
                 val locator = LoggingChannelLocator.inMemory(id)
                 factory.consumer(locator).acceptLog(msg)
             }

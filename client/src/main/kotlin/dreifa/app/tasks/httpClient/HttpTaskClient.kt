@@ -1,6 +1,7 @@
 package dreifa.app.tasks.httpClient
 
 import dreifa.app.tasks.AsyncResultChannelSinkLocator
+import dreifa.app.tasks.TaskDoc
 import dreifa.app.tasks.client.ClientContext
 import dreifa.app.tasks.client.TaskClient
 import dreifa.app.tasks.httpCommon.BlockingTaskRequest
@@ -63,6 +64,9 @@ class HttpTaskClient(
         }
     }
 
+    override fun <I : Any, O : Any> taskDocs(ctx: ClientContext, taskName: String): TaskDoc<I, O> {
+        TODO("Not yet implemented")
+    }
 
     private fun <I> inputToJsonString(input: I): String {
         return if (input != null) {

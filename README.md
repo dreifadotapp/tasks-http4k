@@ -23,7 +23,7 @@ JitPack build status is at https://jitpack.io/com/github/dreifadotapp/tasks-http
 
 As with everything in [Dreifa dot App](https://driefa.app), this library has minimal dependencies.
 
-* Kotlin 1.4
+* Kotlin 1.5
 * Java 11
 * The [http4k](https://www.http4k.org/) toolkit
 * The [Tasks](https://github.com/dreifadotapp/tasks#readme) framework

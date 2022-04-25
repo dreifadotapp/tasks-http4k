@@ -81,6 +81,8 @@ subprojects {
         implementation "com.github.dreifadotapp:commons:$commonsVersion"
         implementation "com.github.dreifadotapp:registry:$registryVersion"
         implementation "com.github.dreifadotapp:simple-serialisation:$sisVersion"
+        implementation "com.github.dreifadotapp:open-telemetry:$openTelementryVersion"
+
 
         testImplementation("com.natpryce:hamkrest:$hamkrestVersion")
         testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")

@@ -1,5 +1,6 @@
 package dreifa.app.tasks.httpClient
 
+import dreifa.app.opentelemetry.ContextHelper
 import dreifa.app.opentelemetry.OpenTelemetryProvider
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.AsyncResultChannelSinkLocator
@@ -9,7 +10,13 @@ import dreifa.app.tasks.client.TaskClient
 import dreifa.app.tasks.httpCommon.BlockingTaskRequest
 import dreifa.app.tasks.httpCommon.Serialiser
 import dreifa.app.types.UniqueId
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.extension.kotlin.asContextElement
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.hc.client5.http.config.RequestConfig
 import org.apache.hc.client5.http.impl.classic.HttpClients
 import org.apache.hc.core5.util.Timeout
@@ -23,7 +30,8 @@ import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
 
-class HttpTaskClient(reg : Registry,
+class HttpTaskClient(
+    reg: Registry,
     private val baseUrl: String
 ) : TaskClient {
     private val serializer = Serialiser()
@@ -46,6 +54,58 @@ class HttpTaskClient(reg : Registry,
         input: I,
         outputClazz: KClass<O>
     ): O {
+        return if (tracer != null && provider != null) {
+            // run with telemetry
+            return runBlocking {
+                val helper = ContextHelper(provider)
+
+                withContext(helper.createContext(ctx.telemetryContext()).asContextElement()) {
+                    val span = startSpan(taskName)
+                    try {
+                        val result = makeRemoteCall(ctx, taskName, input)
+                        val deserialized = serializer.deserialiseData(result)
+
+                        if (deserialized.isValue() || deserialized.isNothing()) {
+                            @Suppress("UNCHECKED_CAST")
+                            completeSpan(span)
+                            deserialized.any() as O
+                        } else {
+                            // the remote side had a problem
+                            completeSpan(span, deserialized.exception())
+                            throw deserialized.exception()
+                        }
+                    } catch (ex: Exception) {
+                        // the client(this side) had a problem
+                        completeSpan(span, ex)
+                        throw ex
+                    }
+                }
+            }
+        } else {
+            // run without telemetry
+            try {
+                val result = makeRemoteCall(ctx, taskName, input)
+                val deserialized = serializer.deserialiseData(result)
+
+                if (deserialized.isValue() || deserialized.isNothing()) {
+                    @Suppress("UNCHECKED_CAST")
+                    deserialized.any() as O
+                } else {
+                    // the remote side had a problem
+                    throw deserialized.exception()
+                }
+            } catch (ex: Exception) {
+                // the client(this side) had a problem
+                throw ex
+            }
+        }
+    }
+
+    private fun <I : Any> makeRemoteCall(
+        ctx: ClientContext,
+        taskName: String,
+        input: I
+    ): String {
         val url = buildUrl(baseUrl, ctx, null)
         val model = BlockingTaskRequest(
             task = taskName,
@@ -53,19 +113,9 @@ class HttpTaskClient(reg : Registry,
             loggingChannelLocator = ctx.logChannelLocator().locator
         )
         val body = serializer.serialiseBlockingTaskRequest(model)
-
         val request = Request(Method.POST, url).body(body)
-
         val result = runRequest(request, taskName, 10)
-
-        val deserialized = serializer.deserialiseData(result)
-
-        if (deserialized.isValue() || deserialized.isNothing()) {
-            @Suppress("UNCHECKED_CAST")
-            return deserialized.any() as O
-        } else {
-            throw deserialized.exception()
-        }
+        return result
     }
 
     override fun <I : Any, O : Any> taskDocs(ctx: ClientContext, taskName: String): TaskDoc<I, O> {
@@ -89,6 +139,23 @@ class HttpTaskClient(reg : Registry,
         } else {
             return result.bodyString()
         }
+    }
+
+    private fun startSpan(taskName: String): Span {
+        return tracer!!.spanBuilder(taskName)
+            .setSpanKind(SpanKind.SERVER)
+            .startSpan()
+    }
+
+    private fun completeSpan(span: Span) {
+        span.setStatus(StatusCode.OK)
+        span.end()
+    }
+
+    private fun completeSpan(span: Span, ex: Throwable) {
+        span.recordException(ex)
+        span.setStatus(StatusCode.ERROR)
+        span.end()
     }
 
     private fun apacheClient(timeoutSec: Int): HttpHandler {

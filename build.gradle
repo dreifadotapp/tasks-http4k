@@ -67,7 +67,9 @@ subprojects {
         implementation("com.github.jitpack:gradle-simple:1.0")
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-        
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+
+
         // Jackson for JSON and YAML
         implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")

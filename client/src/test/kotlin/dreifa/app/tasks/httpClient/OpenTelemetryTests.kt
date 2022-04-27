@@ -10,7 +10,6 @@ import dreifa.app.tasks.demo.CalcSquareTask
 import dreifa.app.tasks.httpServer.TheServerApp
 import dreifa.app.tasks.logging.DefaultLoggingChannelFactory
 import dreifa.app.tasks.logging.InMemoryLoggingRepo
-import io.opentelemetry.api.trace.Tracer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -39,33 +38,48 @@ class OpenTelemetryTests {
     @Test
     fun `should call blocking task with telemetry`() {
         // 1. setup
-        val (reg, provider, _) = init()
+        val testCtx = init()
 
         // 2. test
-        val client = HttpTaskClient(reg, "http://localhost:1234")
+        val client = HttpTaskClient(testCtx.clientReg, "http://localhost:1234")
         val ctx = SimpleClientContext()
         val result = client.execBlocking(ctx, CalcSquareTask::class.qualifiedName!!, 10, Int::class)
 
         // 3. verify
         assertThat(result, equalTo(100))
-        val spansAnalyser = provider.spans().analyser()
+        val spansAnalyser = testCtx.provider.spans().analyser()
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
         assertThat(spansAnalyser.spanIds().size, equalTo(1))
 
     }
 
 
-    private fun init(): Triple<Registry, ZipKinOpenTelemetryProvider, Tracer> {
-        val reg = Registry()
+    private fun init(): TestContext {
+        val clientReg = Registry()
         val provider = ZipKinOpenTelemetryProvider()
-        val tracer = provider.sdk().getTracer("OpenTelemetryScenarios")
+        val tracer = provider.sdk().getTracer("OpenTelemetryTests")
         val inMemoryLogging = InMemoryLoggingRepo()
-        reg.store(provider).store(tracer).store(inMemoryLogging)
+        clientReg.store(provider).store(tracer).store(inMemoryLogging)
+
+        val serverReg = Registry()
+        serverReg.store(provider)   // share the same provider for easy end to end testing
 
         // is this needed ?
-        val logChannelFactory = DefaultLoggingChannelFactory(reg)
-        reg.store(logChannelFactory)
+        val logChannelFactory = DefaultLoggingChannelFactory(clientReg)
+        clientReg.store(logChannelFactory)
 
-        return Triple(reg, provider, tracer)
+        val client = HttpTaskClient(clientReg, "http://localhost:1234")
+
+
+
+        return TestContext(clientReg, serverReg, client, provider)
     }
+
+    data class TestContext(
+        val clientReg: Registry,
+        val serverReg: Registry,
+        val client: HttpTaskClient,
+        val provider: ZipKinOpenTelemetryProvider,
+        //val tracer: Tracer
+    )
 }

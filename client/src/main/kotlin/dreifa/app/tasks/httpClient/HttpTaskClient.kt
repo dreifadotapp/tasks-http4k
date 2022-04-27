@@ -1,5 +1,7 @@
 package dreifa.app.tasks.httpClient
 
+import dreifa.app.opentelemetry.OpenTelemetryProvider
+import dreifa.app.registry.Registry
 import dreifa.app.tasks.AsyncResultChannelSinkLocator
 import dreifa.app.tasks.TaskDoc
 import dreifa.app.tasks.client.ClientContext
@@ -7,6 +9,7 @@ import dreifa.app.tasks.client.TaskClient
 import dreifa.app.tasks.httpCommon.BlockingTaskRequest
 import dreifa.app.tasks.httpCommon.Serialiser
 import dreifa.app.types.UniqueId
+import io.opentelemetry.api.trace.Tracer
 import org.apache.hc.client5.http.config.RequestConfig
 import org.apache.hc.client5.http.impl.classic.HttpClients
 import org.apache.hc.core5.util.Timeout
@@ -20,10 +23,12 @@ import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
 import kotlin.reflect.KClass
 
-class HttpTaskClient(
+class HttpTaskClient(reg : Registry,
     private val baseUrl: String
 ) : TaskClient {
     private val serializer = Serialiser()
+    private val tracer = reg.getOrNull(Tracer::class.java)
+    private val provider = reg.getOrNull(OpenTelemetryProvider::class.java)
     override fun <I : Any, O : Any> execAsync(
         ctx: ClientContext,
         taskName: String,

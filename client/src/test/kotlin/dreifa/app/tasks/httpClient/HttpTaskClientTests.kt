@@ -41,7 +41,7 @@ class HttpTaskClientTests {
 
     @Test
     fun `should call blocking task`() {
-        val client = HttpTaskClient("http://localhost:1234")
+        val client = HttpTaskClient(registry, "http://localhost:1234")
         val ctx = SimpleClientContext()
 
         val result = client.execBlocking(
@@ -66,7 +66,7 @@ class HttpTaskClientTests {
             Pair(Colour.random(), "EchoEnumTask"),
             Pair(DemoModel(), "EchoDemoModelTask")
         )
-        val client = HttpTaskClient("http://localhost:1234")
+        val client = HttpTaskClient(registry,"http://localhost:1234")
         val ctx = SimpleClientContext()
 
         combinations.forEach {
@@ -84,7 +84,7 @@ class HttpTaskClientTests {
 
     @Test
     fun `should return stdout to client`() {
-        val client = HttpTaskClient("http://localhost:1234")
+        val client = HttpTaskClient(registry,"http://localhost:1234")
         val loggingChannelId = String.random()
         val loggingChannelLocator = LoggingChannelLocator("WS;${theClient.baseUrl()};$loggingChannelId")
         val ctx = SimpleClientContext(loggingChannelLocator = loggingChannelLocator)
@@ -108,7 +108,7 @@ class HttpTaskClientTests {
 
     @Test
     fun `should return stderr to client`() {
-        val client = HttpTaskClient("http://localhost:1234")
+        val client = HttpTaskClient(registry,"http://localhost:1234")
         val loggingChannelId = String.random()
         val loggingChannelLocator = LoggingChannelLocator("WS;${theClient.baseUrl()};$loggingChannelId")
         val ctx = SimpleClientContext(loggingChannelLocator = loggingChannelLocator)

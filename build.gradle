@@ -77,12 +77,8 @@ subprojects {
         implementation("org.http4k:http4k-server-jetty")
         implementation("org.http4k:http4k-client-websocket")
 
-        // this will pull in other dependencies
+        // this will pull in other dreifadotapp dependencies
         implementation "com.github.dreifadotapp:tasks:$tasksVersion"
-        //implementation "com.github.dreifadotapp:commons:$commonsVersion"
-        //implementation "com.github.dreifadotapp:registry:$registryVersion"
-        //implementation "com.github.dreifadotapp:simple-serialisation:$sisVersion"
-        //implementation "com.github.dreifadotapp:open-telemetry:$openTelementryVersion"
 
         testImplementation("com.natpryce:hamkrest:$hamkrestVersion")
         testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")

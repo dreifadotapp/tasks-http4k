@@ -47,6 +47,7 @@ class TaskController(registry: Registry) : HttpHandler {
         val ctx = SimpleExecutionContext(loggingProducerContext = producerContext)
 
         return try {
+            // need server side telemetry
             val output = task.exec(ctx, inputDeserialised.any())
             val outputSerialised = serializer.serialiseData(output)
             Response.json(outputSerialised)

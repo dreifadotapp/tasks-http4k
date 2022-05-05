@@ -19,7 +19,17 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenTelemetryTests {
-    private val theServer = TheServerApp()
+    val serverReg = Registry()
+    val provider = ZipKinOpenTelemetryProvider()
+    val serverTracer = provider.sdk().getTracer("OpenTelemetryTests")
+    val theServer: TheServerApp
+
+    init {
+        serverReg.store(provider).store(serverTracer)   // share the same provider for easy end to end testing
+        theServer = TheServerApp(serverReg)
+
+    }
+
 
     // client side (for callback)
     //private val registry = Registry().store(InMemoryLoggingRepo())// need a common InMemoryLoggingRepo
@@ -27,6 +37,7 @@ class OpenTelemetryTests {
 
     @BeforeAll
     fun `start`() {
+
         theServer.start()
         //theClient.start()
     }
@@ -51,7 +62,7 @@ class OpenTelemetryTests {
         // 3. verify
         assertThat(result, equalTo(100))
         val spansAnalyser = testCtx.provider.spans().analyser()
-        val xx = spansAnalyser.filterHasAttributeValue(correlation.openTelemetryAttrName, correlation.id)
+            .filterHasAttributeValue(correlation.openTelemetryAttrName, correlation.id.id)
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
         assertThat(spansAnalyser.spanIds().size, equalTo(1))
 
@@ -60,15 +71,15 @@ class OpenTelemetryTests {
 
     private fun init(): TestContext {
         val clientReg = Registry()
-        val provider = ZipKinOpenTelemetryProvider()
+        //val provider = ZipKinOpenTelemetryProvider()
         val clientTracer = provider.sdk().getTracer("OpenTelemetryTests")
         val inMemoryLogging = InMemoryLoggingRepo()
-        val correlationContext = CorrelationContexts.single("test", String.random())
+        val correlationContext = CorrelationContexts.single("testId", String.random())
         clientReg.store(provider).store(clientTracer).store(inMemoryLogging)
 
-        val serverReg = Registry()
-        val serverTracer = provider.sdk().getTracer("OpenTelemetryTests")
-        serverReg.store(provider).store(serverTracer)   // share the same provider for easy end to end testing
+        //val serverReg = Registry()
+        //val serverTracer = provider.sdk().getTracer("OpenTelemetryTests")
+        //serverReg.store(provider).store(serverTracer)   // share the same provider for easy end to end testing
 
         // is this needed ?
         val logChannelFactory = DefaultLoggingChannelFactory(clientReg)

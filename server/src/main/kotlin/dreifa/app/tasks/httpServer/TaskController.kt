@@ -13,9 +13,9 @@ import dreifa.app.tasks.httpCommon.Serialiser
 import dreifa.app.tasks.httpCommon.json
 import dreifa.app.tasks.httpCommon.text
 import dreifa.app.tasks.logging.*
+import dreifa.app.tasks.opentelemetry.BlockingTaskOTDecorator
 
-
-class TaskController(registry: Registry) : HttpHandler {
+class TaskController(private val registry: Registry) : HttpHandler {
     private val serializer = registry.getOrElse(Serialiser::class.java, Serialiser())
     private val taskFactory = registry.get(TaskFactory::class.java)
     private val loggingChannelFactory = registry.get(LoggingChannelFactory::class.java)
@@ -39,16 +39,18 @@ class TaskController(registry: Registry) : HttpHandler {
 
         @Suppress("UNCHECKED_CAST")
         val task = taskFactory.createInstance(taskRequest.task) as BlockingTask<Any, Any>
-        val inputDeserialised = serializer.deserialiseData(taskRequest.inputSerialized)
 
+        val inputDeserialised = serializer.deserialiseData(taskRequest.inputSerialized)
         val loggingConsumerContext = loggingChannelFactory.consumer(LoggingChannelLocator(taskRequest.loggingChannelLocator))
         val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
 
-        val ctx = SimpleExecutionContext(loggingProducerContext = producerContext)
+        val ctx = SimpleExecutionContext(loggingProducerContext = producerContext,
+            correlation = taskRequest.correlation)
 
         return try {
             // need server side telemetry
-            val output = task.exec(ctx, inputDeserialised.any())
+            val decorated = BlockingTaskOTDecorator(registry, task)
+            val output = decorated.exec(ctx, inputDeserialised.any())
             val outputSerialised = serializer.serialiseData(output)
             Response.json(outputSerialised)
         } catch (ex: Exception) {

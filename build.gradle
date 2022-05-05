@@ -69,7 +69,6 @@ subprojects {
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
 
-
         // Jackson for JSON and YAML
         implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
@@ -82,9 +81,8 @@ subprojects {
         // this will pull in other dreifadotapp dependencies
         implementation "com.github.dreifadotapp:tasks:$tasksVersion"
 
-
         // TODO - temporary, tasks should be updated with the latest open-telemetry deps
-        compile "com.github.dreifadotapp:open-telemetry:0.0.7"
+        //compile "com.github.dreifadotapp:open-telemetry:0.0.9"
 
         testImplementation("com.natpryce:hamkrest:$hamkrestVersion")
         testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")

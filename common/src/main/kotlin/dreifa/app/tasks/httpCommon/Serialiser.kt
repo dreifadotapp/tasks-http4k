@@ -2,8 +2,11 @@ package dreifa.app.tasks.httpCommon
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import dreifa.app.opentelemetry.OpenTelemetryContext
+import dreifa.app.opentelemetry.OpenTelemetryContextDTO
 import dreifa.app.sis.JsonSerialiser
 import dreifa.app.sis.SerialisationPacket
+import dreifa.app.types.CorrelationContexts
 
 class Serialiser {
     private val mapper: ObjectMapper = ObjectMapper()
@@ -43,7 +46,9 @@ data class WsCallbackLoggingContext(val baseUrl: String, val channelId: String)
 data class BlockingTaskRequest(
     val task: String,
     val inputSerialized: String,
-    val loggingChannelLocator: String
+    val loggingChannelLocator: String,
+    val correlation: CorrelationContexts,
+    val telemetryContext: OpenTelemetryContextDTO
 )
 
 

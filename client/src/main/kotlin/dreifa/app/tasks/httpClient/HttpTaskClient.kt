@@ -1,6 +1,7 @@
 package dreifa.app.tasks.httpClient
 
 import dreifa.app.opentelemetry.ContextHelper
+import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.opentelemetry.OpenTelemetryProvider
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.AsyncResultChannelSinkLocator
@@ -59,8 +60,9 @@ class HttpTaskClient(
             return runBlocking {
                 val helper = ContextHelper(provider)
 
-                withContext(helper.createContext(ctx.telemetryContext()).asContextElement()) {
+                withContext(helper.createContext(ctx.telemetryContext().context()).asContextElement()) {
                     val span = startSpan(taskName)
+                    val telemetryContext = OpenTelemetryContext.fromSpan(span)
                     try {
                         val result = makeRemoteCall(ctx, taskName, input)
                         val deserialized = serializer.deserialiseData(result)
@@ -110,7 +112,9 @@ class HttpTaskClient(
         val model = BlockingTaskRequest(
             task = taskName,
             inputSerialized = inputToJsonString(input),
-            loggingChannelLocator = ctx.logChannelLocator().locator
+            loggingChannelLocator = ctx.logChannelLocator().locator,
+            correlation = ctx.correlation(),
+            telemetryContext = ctx.telemetryContext()
         )
         val body = serializer.serialiseBlockingTaskRequest(model)
         val request = Request(Method.POST, url).body(body)

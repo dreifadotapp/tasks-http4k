@@ -12,6 +12,7 @@ import dreifa.app.tasks.httpServer.TheServerApp
 import dreifa.app.tasks.logging.DefaultLoggingChannelFactory
 import dreifa.app.tasks.logging.InMemoryLoggingRepo
 import dreifa.app.types.CorrelationContexts
+import io.opentelemetry.api.trace.SpanKind
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -49,14 +50,21 @@ class OpenTelemetryTests {
         val client = HttpTaskClient(testCtx.clientReg, "http://localhost:1234")
         val ctx = SimpleClientContext(correlation = testCtx.correlation)
         val result = client.execBlocking(ctx, CalcSquareTask::class.qualifiedName!!, 10, Int::class)
-        val correlation = testCtx.correlation.first()
-
-        // 3. verify
         assertThat(result, equalTo(100))
+
+        // 3. verify telemetry
+        val correlation = testCtx.correlation.first()
         val spansAnalyser = provider.spans().analyser()
             .filterHasAttributeValue(correlation.openTelemetryAttrName, correlation.id.id)
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
         assertThat(spansAnalyser.spanIds().size, equalTo(2))
+        val clientSpan = spansAnalyser[0]
+        assertThat(clientSpan.kind, equalTo(SpanKind.CLIENT))
+        assertThat(clientSpan.name, equalTo("CalcSquareTask"))
+        val serverSpan = spansAnalyser[1]
+        assertThat(serverSpan.kind, equalTo(SpanKind.SERVER))
+        assertThat(serverSpan.name, equalTo("CalcSquareTask"))
+
 
     }
 

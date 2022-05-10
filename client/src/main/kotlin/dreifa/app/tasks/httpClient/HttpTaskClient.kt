@@ -9,6 +9,7 @@ import dreifa.app.tasks.TaskDoc
 import dreifa.app.tasks.client.ClientContext
 import dreifa.app.tasks.client.TaskClient
 import dreifa.app.tasks.httpCommon.BlockingTaskRequest
+import dreifa.app.tasks.httpCommon.JavaClass
 import dreifa.app.tasks.httpCommon.Serialiser
 import dreifa.app.types.UniqueId
 import io.opentelemetry.api.trace.Span
@@ -146,8 +147,10 @@ class HttpTaskClient(
     }
 
     private fun startSpan(taskName: String): Span {
-        return tracer!!.spanBuilder(taskName)
+        val javaClass = JavaClass(taskName)
+        return tracer!!.spanBuilder(javaClass.shortName())
             .setSpanKind(SpanKind.CLIENT)
+            .setAttribute("dreifa.task.qualifiedName", taskName)
             .startSpan()
     }
 

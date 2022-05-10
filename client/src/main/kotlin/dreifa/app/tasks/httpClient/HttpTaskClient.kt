@@ -41,7 +41,7 @@ class HttpTaskClient(
     private val provider = reg.getOrNull(OpenTelemetryProvider::class.java)
     override fun <I : Any, O : Any> execAsync(
         ctx: ClientContext,
-        taskName: String,
+        qualifiedTaskName: String,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
         input: I,
@@ -107,12 +107,12 @@ class HttpTaskClient(
 
     private fun <I : Any> makeRemoteCall(
         ctx: ClientContext,
-        taskName: String,
+        qualifiedTaskName: String,
         input: I
     ): String {
         val url = buildUrl(baseUrl, ctx, null)
         val model = BlockingTaskRequest(
-            task = taskName,
+            task = qualifiedTaskName,
             inputSerialized = inputToJsonString(input),
             loggingChannelLocator = ctx.logChannelLocator().locator,
             correlation = ctx.correlation(),
@@ -120,7 +120,7 @@ class HttpTaskClient(
         )
         val body = serializer.serialiseBlockingTaskRequest(model)
         val request = Request(Method.POST, url).body(body)
-        return runRequest(request, taskName, 10)
+        return runRequest(request, qualifiedTaskName, 10)
     }
 
     override fun <I : Any, O : Any> taskDocs(ctx: ClientContext, taskName: String): TaskDoc<I, O> {

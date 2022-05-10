@@ -64,10 +64,7 @@ class OpenTelemetryTests {
         val serverSpan = spansAnalyser[1]
         assertThat(serverSpan.kind, equalTo(SpanKind.SERVER))
         assertThat(serverSpan.name, equalTo("CalcSquareTask"))
-
-
     }
-
 
     private fun init(): TestContext {
         val clientReg = Registry()

@@ -8,7 +8,7 @@ import org.http4k.server.Http4kServer
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
 
-fun main(args: Array<String>) {
+fun main(@Suppress("UNUSED_PARAMETER") args: Array<String>) {
     // todo - how to inject in ?
     //   - server listner bindings
     //   - a list of TaskRegistrations

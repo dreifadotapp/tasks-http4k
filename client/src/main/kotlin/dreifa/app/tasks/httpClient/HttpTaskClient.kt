@@ -68,8 +68,9 @@ class HttpTaskClient(
                         val deserialized = serializer.deserialiseData(result)
 
                         if (deserialized.isValue() || deserialized.isNothing()) {
-                            @Suppress("UNCHECKED_CAST")
                             completeSpan(span)
+
+                            @Suppress("UNCHECKED_CAST")
                             deserialized.any() as O
                         } else {
                             // the remote side had a problem
@@ -77,7 +78,7 @@ class HttpTaskClient(
                             throw deserialized.exception()
                         }
                     } catch (ex: Exception) {
-                        // the client(this side) had a problem
+                        // the client (this side) had a problem
                         completeSpan(span, ex)
                         throw ex
                     }
@@ -97,7 +98,7 @@ class HttpTaskClient(
                     throw deserialized.exception()
                 }
             } catch (ex: Exception) {
-                // the client(this side) had a problem
+                // the client (this side) had a problem
                 throw ex
             }
         }
@@ -118,8 +119,7 @@ class HttpTaskClient(
         )
         val body = serializer.serialiseBlockingTaskRequest(model)
         val request = Request(Method.POST, url).body(body)
-        val result = runRequest(request, taskName, 10)
-        return result
+        return runRequest(request, taskName, 10)
     }
 
     override fun <I : Any, O : Any> taskDocs(ctx: ClientContext, taskName: String): TaskDoc<I, O> {
@@ -177,7 +177,7 @@ class HttpTaskClient(
 
     private fun buildUrl(
         baseUrl: String,
-        ctx: ClientContext,
+        @Suppress("UNUSED_PARAMETER") ctx: ClientContext,
         timeout: Int?
     ): String {
         var paramMarker = "?"

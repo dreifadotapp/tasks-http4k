@@ -62,9 +62,9 @@ class HttpTaskClient(
 
                 withContext(helper.createContext(ctx.telemetryContext().context()).asContextElement()) {
                     val span = startSpan(taskName)
-                    val telemetryContext = OpenTelemetryContext.fromSpan(span)
                     try {
-                        val result = makeRemoteCall(ctx, taskName, input)
+                        val telemetryContext = OpenTelemetryContext.fromSpan(span)
+                        val result = makeRemoteCall(ctx.withTelemetryContext(telemetryContext), taskName, input)
                         val deserialized = serializer.deserialiseData(result)
 
                         if (deserialized.isValue() || deserialized.isNothing()) {
@@ -147,7 +147,7 @@ class HttpTaskClient(
 
     private fun startSpan(taskName: String): Span {
         return tracer!!.spanBuilder(taskName)
-            .setSpanKind(SpanKind.SERVER)
+            .setSpanKind(SpanKind.CLIENT)
             .startSpan()
     }
 

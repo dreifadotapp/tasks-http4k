@@ -41,11 +41,15 @@ class TaskController(private val registry: Registry) : HttpHandler {
         val task = taskFactory.createInstance(taskRequest.task) as BlockingTask<Any, Any>
 
         val inputDeserialised = serializer.deserialiseData(taskRequest.inputSerialized)
-        val loggingConsumerContext = loggingChannelFactory.consumer(LoggingChannelLocator(taskRequest.loggingChannelLocator))
+        val loggingConsumerContext =
+            loggingChannelFactory.consumer(LoggingChannelLocator(taskRequest.loggingChannelLocator))
         val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
 
-        val ctx = SimpleExecutionContext(loggingProducerContext = producerContext,
-            correlation = taskRequest.correlation)
+        val ctx = SimpleExecutionContext(
+            loggingProducerContext = producerContext,
+            correlation = taskRequest.correlation,
+            telemetryContext = taskRequest.telemetryContext.context()
+        )
 
         return try {
             // need server side telemetry

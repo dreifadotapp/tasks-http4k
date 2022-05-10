@@ -18,7 +18,6 @@ implementation 'com.github.dreifadotapp:tasks-http4k:<version>'
 ```
 JitPack build status is at https://jitpack.io/com/github/dreifadotapp/tasks-http4k/$releaseTag/build.log
 
-
 ## Dependencies
 
 As with everything in [Dreifa dot App](https://driefa.app), this library has minimal dependencies.
@@ -29,10 +28,29 @@ As with everything in [Dreifa dot App](https://driefa.app), this library has min
 * The [Tasks](https://github.com/dreifadotapp/tasks#readme) framework
 * The object [Registry](https://github.com/dreifadotapp/registry#readme)
 * The [Commons](https://github.com/dreifadotapp/commons#readme) module
+* The [Open Telemetry](https://github.com/dreifadotapp/open-telemetry#readme) module
+
+## Testing with Open Telemetry 
+
+Open Telemetry support is being added and certain test cases will produce telemetry. The telemetry will be captured 
+by Zipkin if running locally. The easiest way to run Zipkin is via Docker.
+
+```bash
+docker run --rm -it --name zipkin \
+  -p 9411:9411 -d \
+  openzipkin/zipkin:latest
+```
+
+Then open the [Zipkin UI](http://localhost:9411/zipkin/).
+
+Each test run is tagged with a unique booking ref style test id. To filter on a specific 
+id edit open [this link](http://localhost:9411/zipkin/?annotationQuery=dreifa.correlation.testId%3Datestid) and 
+edit `atestid` 
+
 
 ## Next Steps
 
 More on building and using Tasks is [here](./docs/tasks.md)
 
-To build a HelloWorld see here (toto)
+
 

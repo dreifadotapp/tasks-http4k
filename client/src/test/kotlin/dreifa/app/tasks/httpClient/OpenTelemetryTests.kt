@@ -24,7 +24,7 @@ import java.lang.RuntimeException
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenTelemetryTests {
     // share a single provider across server and client - makes it easier to verify
-    private val provider = JaegerOpenTelemetryProvider(true)
+    private val provider = JaegerOpenTelemetryProvider(true, "tasks-http4k")
 
     private val serverReg = Registry()
     private val serverTracer = provider.sdk().getTracer("Server")

@@ -52,7 +52,7 @@ class HttpTaskClient(
 
     override fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
-        taskName: String,
+        qualifiedTaskName: String,
         input: I,
         outputClazz: KClass<O>
     ): O {
@@ -62,10 +62,10 @@ class HttpTaskClient(
                 val helper = ContextHelper(provider)
 
                 withContext(helper.createContext(ctx.telemetryContext().context()).asContextElement()) {
-                    val span = startSpan(taskName)
+                    val span = startSpan(qualifiedTaskName)
                     try {
                         val telemetryContext = OpenTelemetryContext.fromSpan(span)
-                        val result = makeRemoteCall(ctx.withTelemetryContext(telemetryContext), taskName, input)
+                        val result = makeRemoteCall(ctx.withTelemetryContext(telemetryContext), qualifiedTaskName, input)
                         val deserialized = serializer.deserialiseData(result)
 
                         if (deserialized.isValue() || deserialized.isNothing()) {
@@ -88,7 +88,7 @@ class HttpTaskClient(
         } else {
             // run without telemetry
             try {
-                val result = makeRemoteCall(ctx, taskName, input)
+                val result = makeRemoteCall(ctx, qualifiedTaskName, input)
                 val deserialized = serializer.deserialiseData(result)
 
                 if (deserialized.isValue() || deserialized.isNothing()) {
@@ -123,7 +123,7 @@ class HttpTaskClient(
         return runRequest(request, qualifiedTaskName, 10)
     }
 
-    override fun <I : Any, O : Any> taskDocs(ctx: ClientContext, taskName: String): TaskDoc<I, O> {
+    override fun <I : Any, O : Any> taskDocs(ctx: ClientContext, qualifiedTaskName: String): TaskDoc<I, O> {
         TODO("Not yet implemented")
     }
 
@@ -161,7 +161,7 @@ class HttpTaskClient(
 
     private fun completeSpan(span: Span, ex: Throwable) {
         span.recordException(ex)
-        span.setStatus(StatusCode.ERROR)
+        span.setStatus(StatusCode.ERROR, ex.message!!)
         span.end()
     }
 

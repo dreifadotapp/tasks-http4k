@@ -24,7 +24,7 @@ import java.lang.RuntimeException
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenTelemetryTests {
     // share a single provider across server and client - makes it easier to verify
-    private val provider = JaegerOpenTelemetryProvider(true, "tasks-http4k")
+    private val provider = JaegerOpenTelemetryProvider(true, "tasks-http4k-lib")
 
     private val serverReg = Registry()
     private val serverTracer = provider.sdk().getTracer("Server")
@@ -66,17 +66,17 @@ class OpenTelemetryTests {
         // 3. verify telemetry
         val correlation = testCtx.correlation.first()
         val spansAnalyser = provider.spans().analyser()
-            .filterHasAttributeValue(correlation.openTelemetryAttrName, correlation.id.id)
+            .withAttributeValue(correlation.openTelemetryAttrName, correlation.id.id)
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
         assertThat(spansAnalyser.spanIds().size, equalTo(2))
         val clientSpan = spansAnalyser[0]
         assertThat(clientSpan.kind, equalTo(SpanKind.CLIENT))
         assertThat(clientSpan.status, equalTo(StatusData.ok()))
-        assertThat(clientSpan.name, equalTo("CalcSquareTask"))
+        assertThat(clientSpan.name, equalTo("dreifa.app.tasks.demo.CalcSquareTask"))
         val serverSpan = spansAnalyser[1]
         assertThat(serverSpan.kind, equalTo(SpanKind.SERVER))
         assertThat(serverSpan.status, equalTo(StatusData.ok()))
-        assertThat(serverSpan.name, equalTo("CalcSquareTask"))
+        assertThat(serverSpan.name, equalTo("dreifa.app.tasks.demo.CalcSquareTask"))
     }
 
     @Test
@@ -97,17 +97,17 @@ class OpenTelemetryTests {
         // 3. verify telemetry
         val correlation = testCtx.correlation.first()
         val spansAnalyser = provider.spans().analyser()
-            .filterHasAttributeValue(correlation.openTelemetryAttrName, correlation.id.id)
+            .withAttributeValue(correlation.openTelemetryAttrName, correlation.id.id)
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
         assertThat(spansAnalyser.spanIds().size, equalTo(2))
         val clientSpan = spansAnalyser[0]
         assertThat(clientSpan.kind, equalTo(SpanKind.CLIENT))
         assertThat(clientSpan.status, equalTo(StatusData.create(StatusCode.ERROR,"An Exception")))
-        assertThat(clientSpan.name, equalTo("ExceptionGeneratingBlockingTask"))
+        assertThat(clientSpan.name, equalTo("dreifa.app.tasks.demo.ExceptionGeneratingBlockingTask"))
         val serverSpan = spansAnalyser[1]
         assertThat(serverSpan.kind, equalTo(SpanKind.SERVER))
         assertThat(serverSpan.status, equalTo(StatusData.create(StatusCode.ERROR,"An Exception")))
-        assertThat(serverSpan.name, equalTo("ExceptionGeneratingBlockingTask"))
+        assertThat(serverSpan.name, equalTo("dreifa.app.tasks.demo.ExceptionGeneratingBlockingTask"))
     }
 
     //ExceptionGeneratingBlockingTask

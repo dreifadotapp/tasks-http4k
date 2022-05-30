@@ -147,10 +147,8 @@ class HttpTaskClient(
     }
 
     private fun startSpan(taskName: String): Span {
-        val javaClass = JavaClass(taskName)
-        return tracer!!.spanBuilder(javaClass.shortName())
+        return tracer!!.spanBuilder(taskName)
             .setSpanKind(SpanKind.CLIENT)
-            .setAttribute("dreifa.task.qualifiedName", taskName)
             .startSpan()
     }
 

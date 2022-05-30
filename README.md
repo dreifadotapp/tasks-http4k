@@ -13,10 +13,19 @@ Deployed to jitpack. See releases for version details. To include in your projec
 //add jitpack repo 
 maven { url "https://jitpack.io" }
 
-//include the dependency 
+//include the dependency (note this pulls in both client and server)
 implementation 'com.github.dreifadotapp:tasks-http4k:<version>'
+
+// to pull in just client or server 
+implementation 'com.github.dreifadotapp.tasks-http4k:server:<version>'
+
 ```
-JitPack build status is at https://jitpack.io/com/github/dreifadotapp/tasks-http4k/$releaseTag/build.log
+JitPack build status is at:
+
+* https://jitpack.io/com/github/dreifadotapp/tasks-http4k/$releaseTag/build.log
+* https://jitpack.io/com/github/dreifadotapp/tasks-http4k/server/$releaseTag/build.log
+
+
 
 ## Dependencies
 

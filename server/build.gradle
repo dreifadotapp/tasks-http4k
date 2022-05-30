@@ -1,4 +1,4 @@
 dependencies {
-    implementation project(":tasks-http4k-common")
+    implementation project(":common")
 
 }
